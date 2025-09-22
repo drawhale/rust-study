@@ -1,9 +1,15 @@
+fn main() {    
+    let v = vec![1, 2, 3, 4, 5];
 
-mod module;
+    let third: &i32 = &v[2];
+    println!("The third element is {third}");
 
-use crate::module::module1;
+    let third = v.get(2);
 
-fn main() {
-    module1::test();
-}
+    match third {
+        Some(third) => println!("The third element is {third}"),
+        None => println!("There is no third element"),
+    }
+
+}   
 
