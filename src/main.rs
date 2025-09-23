@@ -1,21 +1,22 @@
-use std::collections::HashMap;
+fn main() {
+    let guess = Guess::new(200);
+    println!("{}", guess.value());
+}
 
-fn main() {    
-    let array = [1, 2, 3, 4, 5, 3, 3, 3];
+pub struct Guess {
+    value: i32,
+}
 
-    let mut vec = Vec::from(array);
-    let mut hash_map = HashMap::new();
+impl Guess {
+    pub fn new(value: i32) -> Guess {
+        if value < 1 || value > 100 {
+            panic!("Guess value must be between 1 and 100, got {}.", value);
+        }
 
-    // 한 번의 순회로 빈도 계산
-    for &i in &vec {
-        let count = hash_map.entry(i).or_insert(0);
-        *count += 1;
+        Guess { value }
     }
 
-    // 정렬하여 중간값 구하기
-    vec.sort();
-    let middle_value = vec[vec.len() / 2];
-
-    println!("중간값: {}, 빈도: {:?}", middle_value, hash_map);
-}   
-
+    pub fn value(&self) -> i32 {
+        self.value
+    }
+}
