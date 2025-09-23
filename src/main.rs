@@ -1,15 +1,15 @@
+use std::collections::HashMap;
+
 fn main() {    
-    let v = vec![1, 2, 3, 4, 5];
+    let text = "hello world wonderful world";
 
-    let third: &i32 = &v[2];
-    println!("The third element is {third}");
+    let mut map = HashMap::new();
 
-    let third = v.get(2);
-
-    match third {
-        Some(third) => println!("The third element is {third}"),
-        None => println!("There is no third element"),
+    for word in text.split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1;
     }
 
+    println!("{:?}", map);
 }   
 
