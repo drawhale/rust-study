@@ -1,6 +1,7 @@
 use std::env;
-use std::fs;
 use std::process;
+
+use rust_example::Config;
 
 fn main() {
   let args: Vec<String> = env::args().collect();
@@ -14,24 +15,8 @@ fn main() {
   println!("Searching for {}", config.query);
   println!("In file {}", config.file_path);
 
-  let contents = fs::read_to_string(config.file_path)
-  .expect("Should have been able to read the file");
-  println!("With text:\n{}", contents);
-}
-
-struct Config {
-  query: String,
-  file_path: String,
-}
-
-impl Config {
-  fn parse(args: &[String]) -> Result<Config, &'static str> {
-    if args.len() < 3 {
-      return Err("Not enough arguments");
-    }
-
-    let query = args[1].clone();
-    let file_path = args[2].clone();
-    Ok(Config { query, file_path })
+  if let Err(e) = rust_example::run(config) {
+    println!("Application error: {}", e);
+    process::exit(1)
   }
 }
