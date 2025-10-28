@@ -2,6 +2,12 @@
   "rust-analyzer.diagnostics.enable": true,
   "rust-analyzer.checkOnSave": true,
   "rust-analyzer.check.command": "check",
-  "rust-analyzer.check.allTargets": false,
-  "editor.formatOnSave": true
+  "rust-analyzer.check.allTargets": true,
+  "rust-analyzer.runnables.command": "run",
+  "rust-analyzer.server.extraEnv": {},
+  "editor.formatOnSave": true,
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true
+  }
 }
