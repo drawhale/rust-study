@@ -1,20 +1,14 @@
-use rust_example::{Button, Screen, SelectBox};
+use rust_example::Post;
 
 fn main() {
-    let screen = Screen {
-        components: vec![
-            Box::new(Button {
-                width: 100,
-                height: 50,
-                label: "Click me".to_string(),
-            }),
-            Box::new(SelectBox {
-                width: 100,
-                height: 50,
-                options: vec!["Option 1".to_string(), "Option 2".to_string()],
-            }),
-        ],
-    };
+    let mut post = Post::new();
 
-    screen.run();
+    post.add_text("I ate a salad for lunch today");
+    assert_eq!("", post.content());
+
+    post.request_review();
+    assert_eq!("", post.content());
+
+    post.approve();
+    assert_eq!("I ate a salad for lunch today", post.content());
 }
