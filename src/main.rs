@@ -1,35 +1,41 @@
-use std::ops::Deref;
-
-struct MyBox<T>(T);
-
-impl<T> MyBox<T> {
-    fn new(x: T) -> MyBox<T> {
-        MyBox(x)
-    }
-}
-
-impl<T> Deref for MyBox<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-fn hello(name: &String) {
-    println!("Hello, {name}!");
-}
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
 
 fn main() {
-    let x = 5;
-    let y = Box::new(x);
+    let (tx, rx) = mpsc::channel();
 
-    assert_eq!(5, x);
-    assert_eq!(5, *y);
+    let tx1 = tx.clone();
 
-    let m = MyBox::new(x);
-    assert_eq!(5, *m);
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
 
-    let m = MyBox::new(String::from("Rust"));
-    hello(&m);
+        for val in vals {
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!("Received: {}", received);
+    }
 }
