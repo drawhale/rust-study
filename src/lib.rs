@@ -1,104 +1,45 @@
-use std::env;
-use std::error::Error;
-use std::fs;
-
-pub struct Config {
-    pub query: String,
-    pub file_path: String,
-    pub ignore_case: bool,
+pub trait Draw {
+    fn draw(&self);
 }
 
-impl Config {
-    pub fn parse(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("Not enough arguments");
-        }
-
-        let query = args[1].clone();
-        let file_path = args[2].clone();
-
-        let ignore_case = args.get(3).map_or(env::var("IGNORE_CASE").is_ok(), |arg| {
-            arg == "--ignore-case"
-        });
-
-        Ok(Config {
-            query,
-            file_path,
-            ignore_case,
-        })
-    }
+pub struct Screen {
+    pub components: Vec<Box<dyn Draw>>,
 }
 
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(config.file_path)?;
-
-    let results = if config.ignore_case {
-        search_case_insensitive(&config.query, &contents)
-    } else {
-        search(&config.query, &contents)
-    };
-
-    for line in results {
-        println!("{line}");
-    }
-
-    Ok(())
-}
-
-pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line);
+impl Screen {
+    pub fn run(&self) {
+        for component in self.components.iter() {
+            component.draw();
         }
     }
-
-    results
 }
 
-pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let query = query.to_lowercase();
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            results.push(line);
-        }
-    }
-
-    results
+pub struct Button {
+    pub width: u32,
+    pub height: u32,
+    pub label: String,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn case_sensitive() {
-        let query = "duct";
-        let contents = "\
-Rust:
-safe, fast, productive.
-Pick three.
-Duct tape.
-";
-
-        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+impl Draw for Button {
+    fn draw(&self) {
+        println!(
+            "Drawing a button with width: {}, height: {}, and label: {}",
+            self.width, self.height, self.label
+        );
     }
+}
 
-    #[test]
-    fn case_insensitive() {
-        let query = "rUsT";
-        let contents = "\
-Rust:
-safe, fast, productive.
-Pick three.
-Trust me.";
+pub struct SelectBox {
+    pub width: u32,
+    pub height: u32,
+    pub options: Vec<String>,
+}
 
-        assert_eq!(
-            vec!["Rust:", "Trust me."],
-            search_case_insensitive(query, contents)
+impl Draw for SelectBox {
+    fn draw(&self) {
+        println!(
+            "Drawing a select box with width: {}, height: {}, and options: {:?}",
+            self.width, self.height, self.options
         );
     }
 }
