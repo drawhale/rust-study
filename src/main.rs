@@ -1,14 +1,51 @@
-use rust_example::Post;
+use std::{
+    fs,
+    io::{BufReader, prelude::*},
+    net::{TcpListener, TcpStream},
+    thread,
+    time::Duration,
+};
+
+use rust_example::ThreadPool;
 
 fn main() {
-    let mut post = Post::new();
+    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let pool = ThreadPool::new(4);
 
-    post.add_text("I ate a salad for lunch today");
-    assert_eq!("", post.content());
+    for stream in listener.incoming() {
+        println!("Connection established!");
+        let stream = stream.unwrap();
 
-    post.request_review();
-    assert_eq!("", post.content());
+        pool.execute(|| {
+            handle_connection(stream);
+        });
+    }
 
-    post.approve();
-    assert_eq!("I ate a salad for lunch today", post.content());
+    println!("Shutting down.");
+}
+
+fn handle_connection(mut stream: TcpStream) {
+    let buf_reader = BufReader::new(&mut stream);
+    let mut lines = buf_reader.lines();
+    let request_line = match lines.next() {
+        Some(Ok(line)) => line,
+        _ => {
+            println!("No request line");
+            return;
+        }
+    };
+
+    let (status_line, filename) = match &request_line[..] {
+        "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", "hello.html"),
+        "GET /sleep HTTP/1.1" => {
+            thread::sleep(Duration::from_secs(5));
+            ("HTTP/1.1 200 OK", "hello.html")
+        }
+        _ => ("HTTP/1.1 404 NOT FOUND", "404.html"),
+    };
+
+    let contents = fs::read_to_string(filename).unwrap();
+    let length = contents.len();
+    let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+    stream.write_all(response.as_bytes()).unwrap();
 }
